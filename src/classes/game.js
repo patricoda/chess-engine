@@ -9,7 +9,7 @@ import {
 } from "../engine.js";
 import { Allegiance, GameStatus, PieceType } from "../enums/enums.js";
 import Player from "./player.js";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 export default class Game {
   id = null;
@@ -25,7 +25,7 @@ export default class Game {
   checkingPieces = [];
 
   constructor(players) {
-    this.id = randomUUID();
+    this.id = uuidv4();
     this.board = new Board();
     this.setPlayers(players);
   }
