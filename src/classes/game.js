@@ -8,15 +8,7 @@ import {
   setPieces,
 } from "../engine.js";
 import { Allegiance, GameStatus, PieceType } from "../enums/enums.js";
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-import Player from "./player.js";
-import { v4 as uuidv4 } from "uuid";
-=======
->>>>>>> Stashed changes
 
->>>>>>> Stashed changes
 export default class Game {
   status = GameStatus.NOT_STARTED;
   playerTurn = Allegiance.WHITE;
