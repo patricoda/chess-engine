@@ -1,3 +1,4 @@
 import Game from "./classes/game.js";
+import { Allegiance, GameStatus, PieceType } from "./enums/enums.js";
 
-export default Game;
+export { Game, Allegiance, GameStatus, PieceType };

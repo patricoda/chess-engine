@@ -8,6 +8,15 @@ import {
   setPieces,
 } from "../engine.js";
 import { Allegiance, GameStatus, PieceType } from "../enums/enums.js";
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+import Player from "./player.js";
+import { v4 as uuidv4 } from "uuid";
+=======
+>>>>>>> Stashed changes
+
+>>>>>>> Stashed changes
 export default class Game {
   status = GameStatus.NOT_STARTED;
   playerTurn = Allegiance.WHITE;
@@ -135,18 +144,6 @@ export default class Game {
     this.status = status;
     this.winningPlayer = winningPlayer;
     this.legalMoves = {};
-
-    if (status === GameStatus.CHECKMATE) {
-      console.log(
-        `${this.id} has ended in checkmate. Winner: ${winningPlayer.allegiance}`
-      );
-    } else if (status === GameStatus.STALEMATE) {
-      console.log(`${this.id} has ended in stalemate.`);
-    } else {
-      console.log(
-        `${this.id} has ended with a forfeit. Winner: ${winningPlayer.allegiance}`
-      );
-    }
   }
 
   //construct game state object intended to be sent to clients on each turn
