@@ -107,86 +107,101 @@ export const getCheckingPieces = (board, allegiance) => {
       piece?.type === PieceType.KING && piece?.allegiance === allegiance
   );
 
+  const attackingAllegiance =
+    allegiance === Allegiance.WHITE ? Allegiance.BLACK : Allegiance.WHITE;
+
+  return getAttackingPieces(board, kingTile, attackingAllegiance);
+};
+
+//get pieces attacking the tile passed
+export const getAttackingPieces = (
+  board,
+  attackedTile,
+  attackingAllegiance
+) => {
   const direction =
-    kingTile.piece.allegiance === Allegiance.BLACK
+    attackingAllegiance === Allegiance.WHITE
       ? DirectionOperator.PLUS
       : DirectionOperator.MINUS;
 
-  const pawnCheckingTiles = getPawnCaptureMoves(
+  const pawnAttackingTiles = getPawnCaptureMoves(
     board,
-    kingTile,
+    attackedTile,
     direction
   ).pseudoMoves.reduce((acc, { row, col }) => {
     const tile = board.getTile(row, col);
     const { piece } = tile;
 
-    return piece?.type === PieceType.PAWN && piece?.allegiance !== allegiance
+    return piece?.type === PieceType.PAWN &&
+      piece?.allegiance === attackingAllegiance
       ? [...acc, tile]
       : acc;
   }, []);
 
-  const knightCheckingTiles = getKnightMoves(board, kingTile).reduce(
+  const knightAttackingTiles = getKnightMoves(board, attackedTile).reduce(
     (acc, { row, col }) => {
       const tile = board.getTile(row, col);
       const { piece } = tile;
 
       return piece?.type === PieceType.KNIGHT &&
-        piece?.allegiance !== allegiance
+        piece?.allegiance === attackingAllegiance
         ? [...acc, tile]
         : acc;
     },
     []
   );
 
-  const lateralCheckingTiles = getLateralMoves(board, kingTile).reduce(
+  const lateralAttackingTiles = getLateralMoves(board, attackedTile).reduce(
     (acc, { row, col }) => {
       const tile = board.getTile(row, col);
       const { piece } = tile;
 
       return (piece?.type === PieceType.ROOK ||
         piece?.type === PieceType.QUEEN) &&
-        piece?.allegiance !== allegiance
+        piece?.allegiance === attackingAllegiance
         ? [...acc, tile]
         : acc;
     },
     []
   );
 
-  const diagonalCheckingTiles = getDiagonalMoves(board, kingTile).reduce(
+  const diagonalAttackingTiles = getDiagonalMoves(board, attackedTile).reduce(
     (acc, { row, col }) => {
       const tile = board.getTile(row, col);
       const { piece } = tile;
 
       return (piece?.type === PieceType.BISHOP ||
         piece?.type === PieceType.QUEEN) &&
-        piece?.allegiance !== allegiance
+        piece?.allegiance === attackingAllegiance
         ? [...acc, tile]
         : acc;
     },
     []
   );
 
-  const kingCheckingTiles = getOmnidirectionalMoves(board, kingTile, 2).reduce(
-    (acc, { row, col }) => {
-      const tile = board.getTile(row, col);
-      const { piece } = tile;
+  const kingAttackingTiles = getOmnidirectionalMoves(
+    board,
+    attackedTile,
+    2
+  ).reduce((acc, { row, col }) => {
+    const tile = board.getTile(row, col);
+    const { piece } = tile;
 
-      return piece?.type === PieceType.KING && piece?.allegiance !== allegiance
-        ? [...acc, tile]
-        : acc;
-    },
-    []
-  );
+    return piece?.type === PieceType.KING &&
+      piece?.allegiance === attackingAllegiance
+      ? [...acc, tile]
+      : acc;
+  }, []);
 
-  const checkingTiles = [
-    ...pawnCheckingTiles,
-    ...knightCheckingTiles,
-    ...lateralCheckingTiles,
-    ...diagonalCheckingTiles,
-    ...kingCheckingTiles,
+  const attackingTiles = [
+    ...pawnAttackingTiles,
+    ...knightAttackingTiles,
+    ...lateralAttackingTiles,
+    ...diagonalAttackingTiles,
+    ...kingAttackingTiles,
   ];
 
-  return checkingTiles;
+  return attackingTiles;
 };
 
 const evaluatePins = (board, kingTile) => {
@@ -346,15 +361,12 @@ export const getLegalMoves = ({
 
   for (const tile of currentPlayerPopulatedTiles) {
     //if there are two checking pieces, only king moves are valid
-    if (checkingPieces.length === 2) {
-      resetPieceMoves(tile);
-    } else {
-      generatePseudoLegalMoves(
-        board,
-        tile,
-        moveHistory[moveHistory.length - 1]
-      );
-    }
+    generatePseudoLegalMoves(
+      board,
+      tile,
+      moveHistory[moveHistory.length - 1],
+      checkingPieces
+    );
 
     tile.piece.isPinned = false;
   }
@@ -464,51 +476,62 @@ const getDirectLineBetweenTiles = (
   );
 };
 
-const resetPieceMoves = (actionedTile) => {
+const generatePseudoLegalMoves = (
+  board,
+  actionedTile,
+  mostRecentMove,
+  checkingPieces
+) => {
   const piece = actionedTile.piece;
-  if (piece.type === PieceType.PAWN) {
-    piece.pushMoves = [];
-    piece.captureMoves = [];
+
+  //only king moves are valid when king is in check by two different pieces
+  if (checkingPieces.length === 2 && piece.type !== PieceType.KING) {
+    if (piece.type === PieceType.PAWN) {
+      piece.pushMoves = [];
+      piece.captureMoves = [];
+    } else {
+      piece.validMoves = [];
+    }
   } else {
-    piece.validMoves = [];
+    const validMoves = [];
+
+    switch (piece.type) {
+      case PieceType.PAWN:
+        const { pushMoves, captureMoves } = getPawnMoves(
+          board,
+          actionedTile,
+          mostRecentMove
+        );
+
+        piece.pushMoves = pushMoves;
+        piece.captureMoves = captureMoves;
+
+        return;
+      case PieceType.ROOK:
+        validMoves.push(...getLateralMoves(board, actionedTile));
+        break;
+      case PieceType.KNIGHT:
+        validMoves.push(...getKnightMoves(board, actionedTile));
+        break;
+      case PieceType.BISHOP:
+        validMoves.push(...getDiagonalMoves(board, actionedTile));
+        break;
+      case PieceType.KING:
+        validMoves.push(...getOmnidirectionalMoves(board, actionedTile, 2));
+
+        if (!checkingPieces.length) {
+          validMoves.push(...getCastlingMoves(board, actionedTile));
+        }
+        break;
+      case PieceType.QUEEN:
+        validMoves.push(...getOmnidirectionalMoves(board, actionedTile));
+        break;
+      default:
+        break;
+    }
+
+    piece.validMoves = validMoves;
   }
-};
-
-const generatePseudoLegalMoves = (board, actionedTile, mostRecentMove) => {
-  const validMoves = [];
-  const piece = actionedTile.piece;
-
-  switch (piece.type) {
-    case PieceType.PAWN:
-      const { pushMoves, captureMoves } = getPawnMoves(
-        board,
-        actionedTile,
-        mostRecentMove
-      );
-      piece.pushMoves = pushMoves;
-      piece.captureMoves = captureMoves;
-      return;
-    case PieceType.ROOK:
-      validMoves.push(...getLateralMoves(board, actionedTile));
-      break;
-    case PieceType.KNIGHT:
-      validMoves.push(...getKnightMoves(board, actionedTile));
-      break;
-    case PieceType.BISHOP:
-      validMoves.push(...getDiagonalMoves(board, actionedTile));
-      break;
-    case PieceType.KING:
-      validMoves.push(...getOmnidirectionalMoves(board, actionedTile, 2));
-      validMoves.push(...getCastlingMoves(board, actionedTile));
-      break;
-    case PieceType.QUEEN:
-      validMoves.push(...getOmnidirectionalMoves(board, actionedTile));
-      break;
-    default:
-      break;
-  }
-
-  piece.validMoves = validMoves;
 };
 
 const getCastlingMoves = (board, kingTile) => {
@@ -541,15 +564,22 @@ const getCastlingMoves = (board, kingTile) => {
         true
       );
 
-      const piecesBetweenKingAndRook = rowToEvaluate.some(
+      const isUnclearPathBetweenKingAndRook = rowToEvaluate.some(
         (tile) =>
-          tile.piece &&
-          inbetweenTileCoords.find(({ row, col }) => {
-            return tile.row === row && tile.col === col;
-          })
+          getAttackingPieces(
+            board,
+            tile,
+            king.allegiance === Allegiance.WHITE
+              ? Allegiance.BLACK
+              : Allegiance.WHITE
+          ).length ||
+          (tile.piece &&
+            inbetweenTileCoords.find(({ row, col }) => {
+              return tile.row === row && tile.col === col;
+            }))
       );
 
-      if (piecesBetweenKingAndRook) {
+      if (isUnclearPathBetweenKingAndRook) {
         continue;
       } else {
         castlingMoves.push({
@@ -655,7 +685,9 @@ const getPawnCaptureMoves = (
 
   const legalMoves = pseudoMoves.filter(
     ({ row, col, enPassantPawnCoords }) =>
-      tiles[row][col].piece?.isCapturable(piece) || !!enPassantPawnCoords
+      !piece ||
+      tiles[row][col].piece?.isCapturable(piece) ||
+      !!enPassantPawnCoords
   );
 
   return { pseudoMoves, legalMoves };
@@ -678,7 +710,11 @@ const getKnightMoves = (
 
   return possibleMoves
     .filter(
-      (tile) => tile && (!tile.piece || tile.piece.isCapturable(actionedPiece))
+      (tile) =>
+        tile &&
+        (!actionedPiece ||
+          !tile.piece ||
+          tile.piece.isCapturable(actionedPiece))
     )
     .map(({ row, col }) => ({ row, col }));
 };
@@ -818,7 +854,7 @@ const generateMovesInDirection = (
       const { row, col, piece } = tile;
 
       if (!generateMovesPastBlockers && piece) {
-        if (piece.isCapturable(actionedPiece)) {
+        if (!actionedPiece || piece.isCapturable(actionedPiece)) {
           moves.push({ row, col });
         }
         return moves;
