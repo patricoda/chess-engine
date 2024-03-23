@@ -340,16 +340,26 @@ export const getLegalMoves = ({
     (tile) => tile.piece?.allegiance === allegiance
   );
 
-  for (const tile of currentPlayerPopulatedTiles) {
-    generatePseudoLegalMoves(board, tile, moveHistory[moveHistory.length - 1]);
-    tile.piece.isPinned = false;
-  }
-
   const kingTile = currentPlayerPopulatedTiles.find(
     (tile) => tile.piece.type === PieceType.KING
   );
 
-  //if there are two checking pieces, only king moves are valid
+  for (const tile of currentPlayerPopulatedTiles) {
+    //if there are two checking pieces, only king moves are valid
+    if (checkingPieces.length === 2) {
+      resetPieceMoves(tile);
+    } else {
+      generatePseudoLegalMoves(
+        board,
+        tile,
+        moveHistory[moveHistory.length - 1]
+      );
+    }
+
+    tile.piece.isPinned = false;
+  }
+
+  // no need to evaluate pins if only king moves are legal
   if (checkingPieces.length !== 2) {
     evaluatePins(board, kingTile);
   }
@@ -367,6 +377,7 @@ export const getLegalMoves = ({
   //filter king moves based on attacking tiles, etc
   evaluateLegalKingMoves(board, kingTile);
 
+  //find tiles with valid moves, and return as chess notation
   return currentPlayerPopulatedTiles
     .filter(({ piece }) => {
       return piece.type === PieceType.PAWN
@@ -453,11 +464,17 @@ const getDirectLineBetweenTiles = (
   );
 };
 
-export const generatePseudoLegalMoves = (
-  board,
-  actionedTile,
-  mostRecentMove
-) => {
+const resetPieceMoves = (actionedTile) => {
+  const piece = actionedTile.piece;
+  if (piece.type === PieceType.PAWN) {
+    piece.pushMoves = [];
+    piece.captureMoves = [];
+  } else {
+    piece.validMoves = [];
+  }
+};
+
+const generatePseudoLegalMoves = (board, actionedTile, mostRecentMove) => {
   const validMoves = [];
   const piece = actionedTile.piece;
 
