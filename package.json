@@ -9,8 +9,5 @@
   },
   "author": "Patrick Craig <patrick.craig@olmgroup.com>",
   "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "immer": "^10.0.3"
-  }
+  "type": "module"
 }

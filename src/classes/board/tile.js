@@ -1,10 +1,8 @@
-import { immerable } from "immer";
 import { boardDimensions } from "../../utils/config.js";
 
 const COLUMN_VALUES = "abcdefgh";
 
 export default class Tile {
-  [immerable] = true;
   row;
   col;
   notation;

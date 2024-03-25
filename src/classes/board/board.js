@@ -1,4 +1,3 @@
-import { immerable } from "immer";
 import Tile from "./tile.js";
 import {
   COLUMN_VALUES,
@@ -7,7 +6,6 @@ import {
 } from "../../utils/config.js";
 
 export default class Board {
-  [immerable] = true;
   tiles = [];
 
   constructor() {
