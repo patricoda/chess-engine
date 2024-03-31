@@ -2,12 +2,21 @@
   "name": "@patricoda/chess-engine",
   "version": "2.0.6",
   "description": "",
-  "main": "./src/index.js",
-  "exports": "./src/index.js",
+  "main": "./dist/bundle.js",
+  "exports": {
+    "import": "./dist/bundle.min.js",
+    "require": "./dist/bundle.js"
+  },
   "scripts": {
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Patrick Craig <patrick.craig@olmgroup.com>",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.13.2"
+  },
+  "files": ["dist"]
 }
