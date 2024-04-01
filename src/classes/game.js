@@ -13,7 +13,7 @@ export default class Game {
   status = GameStatus.NOT_STARTED;
   playerTurn = Allegiance.WHITE;
   legalMoves = {};
-  board = [];
+  board = null;
   moveHistory = [];
   promotionState = { isAwaitingPromotionSelection: false, coords: "" };
   winningPlayer = null;
@@ -141,7 +141,6 @@ export default class Game {
   //construct game state object intended to be sent to clients on each turn
   getGameState() {
     const {
-      id,
       status,
       playerTurn,
       legalMoves,
@@ -152,12 +151,11 @@ export default class Game {
     } = this;
 
     return {
-      id,
       status,
       playerTurn,
       legalMoves,
       //TODO send board as FEN string
-      boardState: JSON.stringify(board),
+      board,
       moveHistory,
       isAwaitingPromotionSelection: promotionState.isAwaitingPromotionSelection,
       winningPlayer,
