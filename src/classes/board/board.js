@@ -31,6 +31,7 @@ export default class Board {
     );
   }
 
-  //TODO: convert board to simple board state object
-  toFen() {}
+  getBoardRepresentation() {
+    return this.tiles;
+  }
 }

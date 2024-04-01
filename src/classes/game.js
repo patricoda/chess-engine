@@ -154,8 +154,7 @@ export default class Game {
       status,
       playerTurn,
       legalMoves,
-      //TODO send board as FEN string
-      board,
+      board: board.getBoardRepresentation(),
       moveHistory,
       isAwaitingPromotionSelection: promotionState.isAwaitingPromotionSelection,
       winningPlayer,
