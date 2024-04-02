@@ -17,7 +17,6 @@ export default class Game {
   moveHistory = [];
   promotionState = { isAwaitingPromotionSelection: false, coords: "" };
   winningPlayer = null;
-  //TODO: don't like these as game state fields
   checkingPieces = [];
 
   constructor() {
@@ -25,7 +24,6 @@ export default class Game {
   }
 
   init() {
-    //TODO: pass FEN string to determine initial state
     setPieces(this.board);
     this.legalMoves = getLegalMoves({
       board: this.board,

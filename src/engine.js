@@ -243,7 +243,6 @@ const evaluatePins = (board, kingTile) => {
     ...lateralAttackingTiles,
     ...diagonalAttackingTiles,
   ]) {
-    //TODO: consider getDirectLineBetweenTiles returning tiles not coords..?
     const inbetweenTileCoords = getDirectLineBetweenTiles(
       board,
       attackingTile,
@@ -313,7 +312,6 @@ const handleSingleCheck = (
     const piece = tile.piece;
 
     if (tile !== kingTile && !piece.isPinned) {
-      //TODO: this block is very similar to generating pins, reuse possible?
       if (piece.type === PieceType.PAWN) {
         piece.pushMoves = piece.pushMoves.filter(({ row, col }) =>
           tilesInCheck.some((tile) => tile.row === row && tile.col === col)
@@ -393,8 +391,7 @@ export const getLegalMoves = ({
   return currentPlayerPopulatedTiles
     .filter(({ piece }) => {
       return piece.type === PieceType.PAWN
-        ? //TODO: can we do something about this?
-          piece.captureMoves.length || piece.pushMoves.length
+        ? piece.captureMoves.length || piece.pushMoves.length
         : piece.validMoves.length;
     })
     .reduce(
